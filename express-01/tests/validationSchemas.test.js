@@ -7,6 +7,9 @@ import {
   createMessageSchema,
   updateMessageSchema,
   messageIdParamSchema,
+  createTarefaSchema,
+  updateTarefaSchema,
+  tarefaIdParamSchema,
 } from "../src/middlewares/validationSchemas.js";
 
 const VALID_UUID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
@@ -194,4 +197,49 @@ test("Fase 6 - updateMessageSchema: validação uniforme com createMessageSchema
 
   const emptyRes = updateMessageSchema.safeParse({ body: { text: "" } });
   assert.equal(emptyRes.success, false);
+});
+
+test("tarefa schemas: cria com concluida falsa por padrão e valida descricao", () => {
+  const result = createTarefaSchema.safeParse({
+    body: { descricao: "  Estudar Zod  " },
+  });
+
+  assert.equal(result.success, true);
+  assert.deepEqual(result.data.body, {
+    descricao: "Estudar Zod",
+    concluida: false,
+  });
+  assert.equal(
+    createTarefaSchema.safeParse({ body: { concluida: false } }).success,
+    false
+  );
+});
+
+test("tarefa schemas: atualização aceita qualquer campo isolado, mas não body vazio", () => {
+  assert.equal(
+    updateTarefaSchema.safeParse({ body: { concluida: true } }).success,
+    true
+  );
+  assert.equal(
+    updateTarefaSchema.safeParse({ body: { descricao: "Nova descrição" } })
+      .success,
+    true
+  );
+  assert.equal(updateTarefaSchema.safeParse({ body: {} }).success, false);
+  assert.equal(
+    updateTarefaSchema.safeParse({ body: { concluida: "true" } }).success,
+    false
+  );
+});
+
+test("tarefaIdParamSchema: exige UUID válido em objectId", () => {
+  assert.equal(
+    tarefaIdParamSchema.safeParse({ params: { objectId: VALID_UUID } }).success,
+    true
+  );
+  assert.equal(
+    tarefaIdParamSchema.safeParse({ params: { objectId: "id-invalido" } })
+      .success,
+    false
+  );
 });

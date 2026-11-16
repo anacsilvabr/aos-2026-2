@@ -92,3 +92,39 @@ export const messageIdParamSchema = z.object({
     messageId: z.uuid("Formato de UUID inválido"),
   }),
 });
+
+export const createTarefaSchema = z.object({
+  body: z.object({
+    descricao: z
+      .string("Campo obrigatório")
+      .trim()
+      .min(1, "Campo obrigatório"),
+    concluida: z.boolean().default(false),
+  }),
+});
+
+export const updateTarefaSchema = z.object({
+  body: z
+    .object({
+      descricao: z
+        .string()
+        .trim()
+        .min(1, "Campo não pode ser vazio")
+        .optional(),
+      concluida: z.boolean().optional(),
+    })
+    .refine(
+      (data) =>
+        data.descricao !== undefined || data.concluida !== undefined,
+      {
+        message:
+          "Ao menos um campo (descricao ou concluida) deve ser fornecido para atualização.",
+      }
+    ),
+});
+
+export const tarefaIdParamSchema = z.object({
+  params: z.object({
+    objectId: z.uuid("Formato de UUID inválido"),
+  }),
+});
